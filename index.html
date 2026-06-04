@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Наша Годовщина ❤️</title>
+    <style>
+        /* Основные стили и пастельная палитра */
+        :root {
+            --bg-color: #fbeee6;
+            --accent-color: #ffb3ba;
+            --accent-dark: #ff8b94;
+            --text-color: #6c5b7b;
+            --text-muted: #a08da3;
+            --white: #ffffff;
+            --success: #b5e2b8;
+            --error: #ffb3ba;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* Контейнер экранов с анимацией перехода */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding-top: calc(20px + env(safe-area-inset-top));
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            z-index: 1;
+        }
+
+        .screen.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        /* Универсальные кнопки */
+        .btn {
+            background-color: var(--accent-color);
+            color: var(--white);
+            border: none;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 179, 186, 0.4);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            text-align: center;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            background-color: var(--accent-dark);
+        }
+
+        /* --- ЭКРАН 1: Приветствие --- */
+        .collage-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+            z-index: -2;
+        }
+
+        .collage-bg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(253, 240, 230, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: -1;
+        }
+
+        .welcome-date {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            color: var(--text-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* --- ЭКРАН 2: Викторина --- */
+        .quiz-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 360px;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(108, 91, 123, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .quiz-progress {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quiz-media {
+            width: 100%;
+            max-height: 220px; /* Ограничиваем максимальную высоту, чтобы не вылезали кнопки */
+            border-radius: 16px;
+            object-fit: contain; /* ТЕПЕРЬ ФОТО СЖИМАЕТСЯ, НО ПОКАЗЫВАЕТСЯ ПОЛНОСТЬЮ */
+            background-color: #fff0f2; /* Мягкий пастельный фон для пустых полей по бокам, если фото узкое */
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .quiz-question {
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            width: 100%;
+            background-color: #fff0f2;
+            border: 2px solid #ffe3e6;
+            color: var(--text-color);
+            padding: 14px 16px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.1s ease, background-color 0.3s ease, opacity 0.3s ease;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error);
+            border-color: var(--error);
+            color: var(--white);
+            opacity: 0;
+            transform: scale(0.9);
+            pointer-events: none;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        /* Кнопка "Спасибо" в конце квиза */
+        .thanks-container {
+            display: none;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* --- ЭКРАН 3: Сводка (Слайдер) --- */
+        .slider-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 360px;
+            border-radius: 24px;
+            padding: 30px 24px;
+            box-shadow: 0 10px 25px rgba(108, 91, 123, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .slider-wrapper {
+            width: 100%;
+            /* Меняем жесткую высоту на автоматическую с комфортным минимумом */
+            min-height: 180px; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            /* Добавляем внутренние отступы, чтобы текст не упирался в края */
+            padding: 10px 0; 
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(30px);
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s ease;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 1.5;
+            /* Центрируем контент внутри самого слайда с помощью flex */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-big {
+    /* Меняем порядок отображения, чтобы число 365 шло ПЕРВЫМ, а подпись ВТОРОЙ */
+            display: flex;
+            flex-direction: column;
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .counter-num {
+            display: block;
+            font-size: 38px; /* Немного оптимизировали размер, чтобы не ломать верстку */
+            font-weight: 800;
+            color: var(--accent-dark);
+            margin: 8px 0;
+            font-family: monospace, sans-serif;
+            line-height: 1;
+        }
+
+        /* Крупные цифры для 5 слайда */
+        .slide-big .counter-num {
+            font-size: 58px; 
+            margin-bottom: 12px;
+        }
+
+        /* Стрелочки и точки навигации */
+        .slider-controls {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+            margin-bottom: 20px;
+        }
+
+        .arrow-btn {
+            background: #fff0f2;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--text-color);
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .arrow-btn:active {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .dots-container {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ebdce0;
+            border-radius: 50%;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: var(--accent-dark);
+            transform: scale(1.2);
+        }
+
+        .restart-btn {
+            margin-top: 10px;
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
+            box-shadow: none;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="screen-welcome" class="screen active">
+        <div class="collage-bg">
+            <img src="https://i.ibb.co.com/vCFS6rBr/image.png" alt="love">
+            <img src="https://i.ibb.co.com/jZhgkpJC/image.png" alt="love">
+            <img src="https://i.ibb.co.com/kVNk0rtC/image.png" alt="love">
+            <img src="https://i.ibb.co.com/JRs6vgqm/image.png" alt="love">
+            <img src="https://i.ibb.co.com/yv5x6t7/image.png" alt="love">
+            <img src="https://i.ibb.co.com/spTGvKXD/image.png" alt="love">
+            <img src="https://i.ibb.co.com/XrpztDJ2/image.png" alt="love">
+            <img src="https://i.ibb.co.com/tpR86Qcb/image.png" alt="love">
+            <img src="https://i.ibb.co.com/vCFS6rBr/image.png" alt="love">
+        </div>
+        <div class="blur-overlay"></div>
+        
+        <div class="welcome-date">Нашей истории год</div>
+        <button class="btn" onclick="goToQuiz()">Начать путешествие по воспоминаниям</button>
+    </div>
+
+
+    <div id="screen-quiz" class="screen">
+
+        <div class="quiz-card" id="quiz-main-card">
+            <div class="quiz-progress" id="progress-text">Вопрос 1 из 10</div>
+            
+            <img src="" alt="Воспоминание" class="quiz-media" id="quiz-image">
+            <div class="quiz-question" id="quiz-title">Загрузка вопроса...</div>
+            
+            <div class="options-container" id="options-box">
+                </div>
+        </div>
+
+        <div class="thanks-container" id="thanks-box">
+            <button class="btn" onclick="goToSummary()">Спасибо что ты есть в моей жизни ❤️</button>
+        </div>
+    </div>
+
+
+    <div id="screen-summary" class="screen">
+        <div class="slider-card">
+            <div class="slider-wrapper">
+                
+                <div class="slide active" id="slide-0">
+                    в этом году мы любили друг друга более
+                    <span class="counter-num" id="count-0">0</span>
+                    секунд
+                </div>
+
+                <div class="slide" id="slide-1">
+                    в этом году мы целовались больше
+                    <span class="counter-num" id="count-1">0</span>
+                    раз
+                </div>
+
+                <div class="slide" id="slide-2">
+                    в этом году мы танцевали более
+                    <span class="counter-num" id="count-2">0</span>
+                    раз
+                </div>
+
+                <div class="slide" id="slide-3">
+                    за этот год мы постарались понять друг друга в сложных ситуациях более
+                    <span class="counter-num" id="count-4">0</span>
+                    раз
+                </div>
+
+                <div class="slide slide-big" id="slide-4">
+                    <span class="counter-num" id="count-5">0</span>
+                    Счастливых дней прожито в этом году
+                </div>
+
+            </div>
+
+            <div class="slider-controls">
+                <button class="arrow-btn" onclick="changeSlide(-1)">←</button>
+                <div class="dots-container" id="dots-box"></div>
+                <button class="arrow-btn" onclick="changeSlide(1)">→</button>
+            </div>
+
+            <button class="btn restart-btn" onclick="restartAll()">Повторить путешествие</button>
+        </div>
+    </div>
+
+    <script>
+        // --- БАЗА ДАННЫХ КВИЗА (10 ВОПРОСОВ) ---
+        // Ты можешь изменять тексты, варианты ответов и ссылки на фотографии.
+        // Индекс correct указывает на верный ответ (0 - первый вариант, 1 - второй и т.д.)
+        const quizQuestions = [
+            {
+                type: "text",
+                text: "Вопрос 1: В какое место мы пошли на первое свидание?",
+                image: "",
+                options: ["Deilish", "Coffee Boom", "В парк", "Shaurma Food"],
+                correct: 1
+            },
+            {
+                type: "photo",
+                text: "Где?",
+                image: "https://i.ibb.co.com/N2nK0VZp/image.png", // Замени на свое фото
+                options: ["В Ташкенте", "В Астане", "В Тайланде", "В Таразе"],
+                correct: 2
+            },
+            {
+                type: "photo",
+                text: "Когда?",
+                image: "https://i.ibb.co.com/ynVnh29m/image.png", // Замени на свое фото
+                options: ["в сентябре", "в январе", "в марте", "в ноябре"],
+                correct: 1
+            },
+            {
+                type: "text",
+                text: "Вопрос 4: Какого числа мы начали жить вместе (съехались)?",
+                image: "",
+                options: ["20.10.2025", "15.11.2025", "25.09.2025", "11.09.2001"],
+                correct: 0
+            },
+            {
+                type: "photo",
+                text: "Какого числа?",
+                image: "https://i.ibb.co.com/4Z1tMdQQ/image.png", // Замени на свое фото
+                options: ["18 февраля", "67 июня", "26 сентября", "8 марта"],
+                correct: 2
+            },
+            {
+                type: "photo",
+                text: "Где?",
+                image: "https://i.ibb.co.com/sdTBzsYk/image.png", // Замени на свое фото
+                options: ["В Астане", "В Тайланде", "В Таразе", "В Ташкенте"],
+                correct: 0
+            },
+            {
+                type: "text",
+                text: "Вопрос 7: Какое блюдо я приготовил для тебя впервые?",
+                image: "",
+                options: ["Ребра", "Суши", "Бургер", "Борщ"],
+                correct: 2
+            },
+            {
+                type: "photo",
+                text: "Большая кока-кола зиро и маленькая кока-кола зиро",
+                image: "https://i.ibb.co.com/Xrhc5jrV/image.png", // Замени на свое фото
+                options: ["Мы", "не Мы", "Я люблю тыкву", "67"],
+                correct: 0
+            },
+            {
+                type: "photo",
+                text: "Куда?",
+                image: "https://i.ibb.co.com/604pwp5t/image.png", // Замени на свое фото
+                options: ["В бассейн", "В Боровое", "В Тайланд", "В Дубай"],
+                correct: 3
+            },
+            {
+                type: "text",
+                text: "Вопрос 10: Какого числа ты согласилась выйти за меня замуж?",
+                image: "",
+                options: ["26.02.2026", "02.02.2026", "20.02.2026", "03.03.2026"],
+                correct: 2
+            }
+        ];
+
+        // Итоговые числа для анимации счетчиков на Экране 3
+        const counterTargets = [31536000, 3472, 74, 53, 365];
+
+        let currentQuestion = 0;
+        let currentSlide = 0;
+        let animationTimers = [];
+
+        // Переключение экранов
+        function changeScreen(fromId, toId) {
+            document.getElementById(fromId).classList.remove('active');
+            document.getElementById(toId).classList.add('active');
+        }
+
+        function goToQuiz() {
+            currentQuestion = 0;
+            document.getElementById('quiz-main-card').style.display = 'flex';
+            document.getElementById('thanks-box').style.display = 'none';
+            renderQuestion();
+            changeScreen('screen-welcome', 'screen-quiz');
+        }
+
+        // Рендеринг текущего вопроса
+        function renderQuestion() {
+            const qData = quizQuestions[currentQuestion];
+            
+            // Прогресс бар
+            document.getElementById('progress-text').innerText = `Вопрос ${currentQuestion + 1} из 10`;
+            
+            // Настройка медиа (фото или текст)
+            const imgEl = document.getElementById('quiz-image');
+            if(qData.type === "photo") {
+                imgEl.src = qData.image;
+                imgEl.style.display = 'block';
+            } else {
+                imgEl.style.display = 'none';
+            }
+            
+            document.getElementById('quiz-title').innerText = qData.text;
+            
+            // Настройка вариантов ответов
+            const optionsBox = document.getElementById('options-box');
+            optionsBox.innerHTML = '';
+            
+            qData.options.forEach((optText, index) => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.innerText = optText;
+                button.onclick = () => checkAnswer(index, button);
+                optionsBox.appendChild(button);
+            });
+        }
+
+        // Проверка ответа
+        function checkAnswer(selectedIndex, clickedButton) {
+            const qData = quizQuestions[currentQuestion];
+            
+            if (selectedIndex === qData.correct) {
+                // ПРАВИЛЬНЫЙ ОТВЕТ
+                // Замораживаем клики по всем кнопкам
+                const allButtons = document.querySelectorAll('.option-btn');
+                allButtons.forEach(btn => btn.removeAttribute('onclick'));
+                
+                clickedButton.classList.add('correct');
+                
+                // Фиксация на 0.8 секунды и автоматический переход
+                setTimeout(() => {
+                    currentQuestion++;
+                    if(currentQuestion < quizQuestions.length) {
+                        renderQuestion();
+                    } else {
+                        // Если квиз пройден — прячем квиз и открываем кнопку "Спасибо"
+                        document.getElementById('quiz-main-card').style.display = 'none';
+                        document.getElementById('thanks-box').style.display = 'block';
+                    }
+                }, 800);
+            } else {
+                // НЕПРАВИЛЬНЫЙ ОТВЕТ
+                clickedButton.classList.add('wrong');
+                // Кнопка моментально исчезает благодаря CSS transition и opacity 0 (завершается через display: none)
+                setTimeout(() => {
+                    clickedButton.style.display = 'none';
+                }, 300);
+            }
+        }
+
+        function goToSummary() {
+            changeScreen('screen-quiz', 'screen-summary');
+            buildDots();
+            currentSlide = 0;
+            showSlide(0);
+        }
+
+        // --- ЛОГИКА СЛАЙДЕРА И СЧЕТЧИКОВ ---
+        function buildDots() {
+            const dotsBox = document.getElementById('dots-box');
+            dotsBox.innerHTML = '';
+            for(let i = 0; i < 5; i++) {
+                const dot = document.createElement('div');
+                dot.className = `dot ${i === 0 ? 'active' : ''}`;
+                dotsBox.appendChild(dot);
+            }
+        }
+
+        function changeSlide(direction) {
+            let nextSlide = currentSlide + direction;
+            if(nextSlide >= 0 && nextSlide < 5) {
+                currentSlide = nextSlide;
+                showSlide(currentSlide);
+            }
+        }
+
+        function showSlide(index) {
+            // Сбрасываем все таймеры прошлых анимаций, чтобы не накладывались
+            animationTimers.forEach(t => clearInterval(t));
+            animationTimers = [];
+
+            // Переключаем активные классы на слайдах
+            for(let i = 0; i < 5; i++) {
+                const slide = document.getElementById(`slide-${i}`);
+                if(i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            }
+
+            // Переключаем активные точки
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, dIdx) => {
+                if(dIdx === index) dot.classList.add('active');
+                else dot.classList.remove('active');
+            });
+
+            // Запускаем бегущий счетчик для текущего слайда
+            animateCounter(index);
+        }
+
+        function animateCounter(index) {
+            // Так как ID элементов созданы как count-0, count-1, count-2, count-4, count-5 (для 5-го слайда)
+            let elementId = `count-${index}`;
+            if(index === 3) elementId = `count-4`;
+            if(index === 4) elementId = `count-5`;
+
+            const counterElement = document.getElementById(elementId);
+            const target = counterTargets[index];
+            counterElement.innerText = "0";
+
+            let start = 0;
+            const duration = 1800; // Продолжительность анимации в мс
+            const steps = 40; // Количество шагов анимации
+            const stepTime = duration / steps;
+            const increment = target / steps;
+
+            let currentStep = 0;
+
+            const timer = setInterval(() => {
+                currentStep++;
+                start += increment;
+                
+                if (currentStep >= steps) {
+                    clearInterval(timer);
+                    counterElement.innerText = target.toLocaleString('ru-RU');
+                } else {
+                    counterElement.innerText = Math.floor(start).toLocaleString('ru-RU');
+                }
+            }, stepTime);
+
+            animationTimers.push(timer);
+        }
+
+        // Перезапуск
+        function restartAll() {
+            animationTimers.forEach(t => clearInterval(t));
+            changeScreen('screen-summary', 'screen-welcome');
+        }
+    </script>
+</body>
+</html>
