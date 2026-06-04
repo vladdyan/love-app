@@ -114,9 +114,11 @@
         }
 
         .welcome-date {
-            font-size: 42px;
+            font-size: 36px; /* Немного уменьшили размер, чтобы текст аккуратнее ложился на мобильных экранах */
             font-weight: 800;
-            letter-spacing: 2px;
+            text-align: center; /* ГАРАНТИРУЕТ ЦЕНТРИРОВАНИЕ КАЖДОЙ СТРОКИ ПРИ ПЕРЕНОСЕ */
+            line-height: 1.3; /* Задает красивый и правильный отступ между перенесенными строками */
+            max-width: 90%; /* Не дает тексту упираться в самые края экрана телефона */
             margin-bottom: 30px;
             color: var(--text-color);
             text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
